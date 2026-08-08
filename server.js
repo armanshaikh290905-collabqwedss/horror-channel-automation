@@ -138,7 +138,7 @@ Description: ${story.description}
 Create the three scripts following the format specified.`;
 
     const message = await groq.messages.create({
-      model: 'mixtral-8x7b-32768',
+      model: process.env.GROQ_MODEL || 'mixtral-8x7b-32768',
       max_tokens: 4000,
       messages: [
         {
@@ -182,7 +182,7 @@ Create the three scripts following the format specified.`;
     generatedScripts.push(scriptRecord);
 
     // Send email if configured
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+    if (process.env.RESEND_API_KEY && process.env.RECIPIENT_EMAIL) {
       await sendScriptEmail(scriptRecord);
     }
 
@@ -221,8 +221,8 @@ app.post('/api/reset', (req, res) => {
 // Email sender function (using Resend)
 async function sendScriptEmail(scriptRecord) {
   try {
-    if (!process.env.RESEND_API_KEY || !process.env.EMAIL_RECIPIENT) {
-      console.log('Resend API key or EMAIL_RECIPIENT not configured. Skipping email.');
+    if (!process.env.RESEND_API_KEY || !process.env.RECIPIENT_EMAIL) {
+      console.log('Resend API key or RECIPIENT_EMAIL not configured. Skipping email.');
       return;
     }
 
@@ -254,8 +254,8 @@ async function sendScriptEmail(scriptRecord) {
     `;
 
     const response = await resend.emails.send({
-      from: 'Horror Channel <onboarding@resend.dev>',
-      to: process.env.EMAIL_RECIPIENT,
+      from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+      to: process.env.RECIPIENT_EMAIL,
       subject: `Horror Scripts: ${scriptRecord.storyTitle}`,
       html: emailContent
     });
@@ -295,10 +295,12 @@ async function generateScripts(storyId) {
   const prompt = `Generate horror scripts for this story:
 Title: ${story.title}
 Type: ${story.type}
-Description: ${story.description}`;
+Description: ${story.description}
+
+Create the three scripts following the format specified.`;
 
   const message = await groq.messages.create({
-    model: 'mixtral-8x7b-32768',
+    model: process.env.GROQ_MODEL || 'mixtral-8x7b-32768',
     max_tokens: 4000,
     messages: [{ role: 'user', content: prompt }],
     system: systemPrompt
@@ -319,7 +321,7 @@ Description: ${story.description}`;
   
   generatedScripts.push(scriptRecord);
   
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+  if (process.env.RESEND_API_KEY && process.env.RECIPIENT_EMAIL) {
     await sendScriptEmail(scriptRecord);
   }
   
