@@ -486,13 +486,11 @@
     const API_BASE = '/api';
     let startTime = Date.now();
 
-    // Initialize
     document.getElementById('addStoryForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       await addStory();
     });
 
-    // Tab switching
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
@@ -504,7 +502,6 @@
       if (tabName === 'scripts') loadScripts();
     }
 
-    // Load stories
     async function loadStories() {
       try {
         const res = await fetch(`${API_BASE}/stories`);
@@ -518,7 +515,6 @@
               <div style="font-size: 0.85em; color: #95a5a6; margin-top: 5px;">${s.description || 'No description'}</div>
             </div>
             <div class="story-actions">
-              <button class="btn-secondary" onclick="editStory(${s.id})">✏️</button>
               <button class="btn-danger" onclick="deleteStory(${s.id})">🗑️</button>
             </div>
           </div>
@@ -530,7 +526,6 @@
       }
     }
 
-    // Load generate options
     async function loadGenerateOptions() {
       try {
         const res = await fetch(`${API_BASE}/stories`);
@@ -558,7 +553,6 @@
       }
     }
 
-    // Add story
     async function addStory() {
       const title = document.getElementById('storyTitle').value;
       const type = document.getElementById('storyType').value;
@@ -581,7 +575,6 @@
       }
     }
 
-    // Delete story
     async function deleteStory(id) {
       if (!confirm('Delete this story?')) return;
       
@@ -594,7 +587,6 @@
       }
     }
 
-    // Generate scripts
     async function generateScripts(storyId) {
       const btn = event.target;
       btn.disabled = true;
@@ -624,7 +616,6 @@
       }
     }
 
-    // Load scripts
     async function loadScripts() {
       try {
         const res = await fetch(`${API_BASE}/scripts`);
@@ -672,7 +663,6 @@
       }
     }
 
-    // Update status
     async function updateStatus() {
       try {
         const res = await fetch(`${API_BASE}/status`);
@@ -693,7 +683,6 @@
       }
     }
 
-    // Reset stories
     async function resetStories() {
       if (!confirm('Reset ALL stories? They will all be marked as unused.')) return;
 
@@ -709,7 +698,6 @@
       }
     }
 
-    // Helpers
     function showMessage(text, type) {
       const msg = document.getElementById('message');
       msg.textContent = text;
@@ -726,7 +714,6 @@
       return `${hours}h`;
     }
 
-    // Initial load
     loadStories();
     updateStatus();
     setInterval(updateStatus, 30000);
