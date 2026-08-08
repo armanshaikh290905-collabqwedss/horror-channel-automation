@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import Groq from 'groq-sdk';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import schedule from 'node-schedule';
 import dotenv from 'dotenv';
 import fs from 'fs';
@@ -15,6 +15,7 @@ const app = express();
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // In-memory storage
 let storyIdeas = [
@@ -217,16 +218,13 @@ app.post('/api/reset', (req, res) => {
   res.json({ success: true, message: 'All stories reset' });
 });
 
-// Email sender function
+// Email sender function (using Resend)
 async function sendScriptEmail(scriptRecord) {
   try {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-      }
-    });
+    if (!process.env.RESEND_API_KEY || !process.env.EMAIL_RECIPIENT) {
+      console.log('Resend API key or EMAIL_RECIPIENT not configured. Skipping email.');
+      return;
+    }
 
     const emailContent = `
 <h2>Horror Channel Scripts Generated</h2>
@@ -236,15 +234,15 @@ async function sendScriptEmail(scriptRecord) {
 
 <h3>Long-Form Script (${scriptRecord.longForm.duration})</h3>
 <p><strong>Title:</strong> ${scriptRecord.longForm.title}</p>
-<pre>${scriptRecord.longForm.narration}</pre>
+<pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto;">${scriptRecord.longForm.narration}</pre>
 
 <h3>Hook Short (${scriptRecord.hookShort.duration})</h3>
 <p><strong>Title:</strong> ${scriptRecord.hookShort.title}</p>
-<pre>${scriptRecord.hookShort.narration}</pre>
+<pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto;">${scriptRecord.hookShort.narration}</pre>
 
 <h3>Climax Short (${scriptRecord.climaxShort.duration})</h3>
 <p><strong>Title:</strong> ${scriptRecord.climaxShort.title}</p>
-<pre>${scriptRecord.climaxShort.narration}</pre>
+<pre style="background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto;">${scriptRecord.climaxShort.narration}</pre>
 
 <h3>Content Warnings</h3>
 <p>${scriptRecord.contentWarnings}</p>
@@ -252,17 +250,17 @@ async function sendScriptEmail(scriptRecord) {
 <h3>Production Tips</h3>
 <p>${scriptRecord.tips}</p>
 
-<p>Generated: ${scriptRecord.generatedAt}</p>
+<p><small>Generated: ${scriptRecord.generatedAt}</small></p>
     `;
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_RECIPIENT || process.env.EMAIL_USER,
+    const response = await resend.emails.send({
+      from: 'Horror Channel <onboarding@resend.dev>',
+      to: process.env.EMAIL_RECIPIENT,
       subject: `Horror Scripts: ${scriptRecord.storyTitle}`,
       html: emailContent
     });
 
-    console.log('Email sent successfully');
+    console.log('Email sent successfully via Resend:', response.id);
   } catch (error) {
     console.error('Email error:', error);
   }
