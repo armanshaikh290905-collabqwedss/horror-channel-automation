@@ -1,0 +1,28 @@
+{
+  "name": "horror-channel-automation",
+  "version": "1.0.0",
+  "description": "Automated horror YouTube script generation using Groq API",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "horror",
+    "youtube",
+    "script-generation",
+    "groq",
+    "automation"
+  ],
+  "author": "Arman Shaikh",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "groq-sdk": "^0.3.3",
+    "nodemailer": "^6.9.7",
+    "node-schedule": "^2.1.1",
+    "dotenv": "^16.3.1"
+  }
+}
